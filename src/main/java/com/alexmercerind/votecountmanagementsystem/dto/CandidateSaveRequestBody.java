@@ -13,4 +13,5 @@ public class CandidateSaveRequestBody {
     private String candidateName;
     private String candidateParty;
     private String candidateAddress;
+    private String candidateImage;
 }
