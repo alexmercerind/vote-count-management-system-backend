@@ -16,10 +16,6 @@ public class CandidateImageService {
         return candidateImageRepository.findById(candidateId).get();
     }
 
-    public void deleteById(int candidateId) {
-        candidateImageRepository.deleteById(candidateId);
-    }
-
     public void save(CandidateImage image) {
         candidateImageRepository.save(image);
     }
