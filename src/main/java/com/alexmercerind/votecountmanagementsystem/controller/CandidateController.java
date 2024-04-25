@@ -1,8 +1,7 @@
 package com.alexmercerind.votecountmanagementsystem.controller;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alexmercerind.votecountmanagementsystem.dto.CandidateSaveRequestBody;
 import com.alexmercerind.votecountmanagementsystem.dto.GenericResponseBody;
 import com.alexmercerind.votecountmanagementsystem.entity.Candidate;
-import com.alexmercerind.votecountmanagementsystem.entity.CandidateImage;
-import com.alexmercerind.votecountmanagementsystem.service.CandidateImageService;
 import com.alexmercerind.votecountmanagementsystem.service.CandidateService;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,65 +32,54 @@ public class CandidateController {
     @Autowired
     private CandidateService candidateService;
 
-    @Autowired
-    private CandidateImageService candidateImageService;
-
     @GetMapping("/")
     public ResponseEntity<Iterable<Candidate>> findAll() {
         logger.info("CandidateController::findAll");
-        return ResponseEntity.ok(candidateService.findAll());
+        final Iterable<Candidate> candidates = candidateService.findAll();
+        return ResponseEntity.ok(candidates);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Candidate> findById(@PathVariable("id") Integer id) {
+    @GetMapping("/{candidateId}")
+    public ResponseEntity<Candidate> findById(@PathVariable("candidateId") Integer candidateId) {
         logger.info("CandidateController::findById");
-        return ResponseEntity.ok(candidateService.findById(id));
+        final Candidate candidate = candidateService.findById(candidateId);
+        return ResponseEntity.ok(candidate);
     }
 
-    @GetMapping("/delete/{id}")
-    public ResponseEntity<GenericResponseBody> deleteById(@PathVariable("id") Integer id) {
+    @GetMapping("/delete/{candidateId}")
+    public ResponseEntity<GenericResponseBody> deleteById(@PathVariable("candidateId") Integer candidateId) {
         logger.info("CandidateController::deleteById");
-
-        candidateService.deleteById(id);
-
+        candidateService.deleteById(candidateId);
         return ResponseEntity.ok(new GenericResponseBody(true, null));
     }
 
     @PostMapping("/save")
     public ResponseEntity<GenericResponseBody> save(@RequestBody CandidateSaveRequestBody candidateSaveRequestBody) {
         logger.info("CandidateController::save");
-
-        final Candidate candidate = new Candidate();
-        candidate.setCandidateName(candidateSaveRequestBody.getCandidateName());
-        candidate.setCandidateParty(candidateSaveRequestBody.getCandidateParty());
-        candidate.setCandidateAddress(candidateSaveRequestBody.getCandidateAddress());
-        candidateService.save(candidate);
-
-        if (candidateSaveRequestBody.getCandidateImage() != null) {
-            final CandidateImage candidateImage = new CandidateImage();
-            candidateImage.setCandidateId(candidate.getCandidateId());
-            candidateImage.setCandidateImage(candidateSaveRequestBody.getCandidateImage());
-            candidateImageService.save(candidateImage);
-        }
-
+        candidateService.save(
+                candidateSaveRequestBody.getCandidateName(),
+                candidateSaveRequestBody.getCandidateParty(),
+                candidateSaveRequestBody.getCandidateAddress(),
+                candidateSaveRequestBody.getCandidateImage());
         return ResponseEntity.ok(new GenericResponseBody(true, null));
     }
 
-    @GetMapping("/image/{id}")
+    @GetMapping("/image/{candidateId}")
     @ResponseBody
-    public void imageById(@PathVariable("id") Integer id, HttpServletResponse response) throws IOException {
+    public void imageById(@PathVariable("candidateId") Integer candidateId, HttpServletResponse httpServletResponse)
+            throws IOException {
         logger.info("CandidateController::imageById");
+        candidateService.imageById(candidateId, httpServletResponse);
+    }
 
-        final CandidateImage candidateImage = candidateImageService.findById(id);
-
-        final String[] parts = candidateImage.getCandidateImage().split(",");
-
-        final String mime = parts[0].split(":")[1].split(";")[0];
-        final byte[] image = Base64.getDecoder().decode(parts[1].getBytes(StandardCharsets.UTF_8));
-
-        response.setContentType(mime);
-        response.setContentLength(image.length);
-        response.getOutputStream().write(image);
+    @ExceptionHandler({
+            IOException.class,
+            NoSuchElementException.class
+    })
+    public ResponseEntity<GenericResponseBody> handleIOException(Exception e) {
+        logger.info("CandidateController::handleIOException");
+        logger.error(e.toString());
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(Exception.class)
