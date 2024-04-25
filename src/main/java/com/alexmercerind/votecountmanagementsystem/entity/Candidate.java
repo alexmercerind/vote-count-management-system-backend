@@ -1,4 +1,3 @@
-
 package com.alexmercerind.votecountmanagementsystem.entity;
 
 import jakarta.persistence.Column;

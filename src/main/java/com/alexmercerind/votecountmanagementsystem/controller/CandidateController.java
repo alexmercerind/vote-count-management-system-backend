@@ -40,16 +40,16 @@ public class CandidateController {
     }
 
     @GetMapping("/{candidateId}")
-    public ResponseEntity<Candidate> findById(@PathVariable("candidateId") Integer candidateId) {
-        logger.info("CandidateController::findById");
-        final Candidate candidate = candidateService.findById(candidateId);
+    public ResponseEntity<Candidate> findByCandidateId(@PathVariable("candidateId") Integer candidateId) {
+        logger.info("CandidateController::findByCandidateId");
+        final Candidate candidate = candidateService.findByCandidateId(candidateId);
         return ResponseEntity.ok(candidate);
     }
 
     @GetMapping("/delete/{candidateId}")
-    public ResponseEntity<GenericResponseBody> deleteById(@PathVariable("candidateId") Integer candidateId) {
-        logger.info("CandidateController::deleteById");
-        candidateService.deleteById(candidateId);
+    public ResponseEntity<GenericResponseBody> deleteByCandidateId(@PathVariable("candidateId") Integer candidateId) {
+        logger.info("CandidateController::deleteByCandidateId");
+        candidateService.deleteByCandidateId(candidateId);
         return ResponseEntity.ok(new GenericResponseBody(true, null));
     }
 
@@ -66,26 +66,28 @@ public class CandidateController {
 
     @GetMapping("/image/{candidateId}")
     @ResponseBody
-    public void imageById(@PathVariable("candidateId") Integer candidateId, HttpServletResponse httpServletResponse)
+    public void imageByCandidateId(
+            @PathVariable("candidateId") Integer candidateId,
+            HttpServletResponse httpServletResponse)
             throws IOException {
-        logger.info("CandidateController::imageById");
-        candidateService.imageById(candidateId, httpServletResponse);
+        logger.info("CandidateController::imageByCandidateId");
+        candidateService.imageByCandidateId(candidateId, httpServletResponse);
     }
 
     @ExceptionHandler({
             IOException.class,
             NoSuchElementException.class
     })
-    public ResponseEntity<GenericResponseBody> handleIOException(Exception e) {
-        logger.info("CandidateController::handleIOException");
-        logger.error(e.toString());
+    public ResponseEntity<GenericResponseBody> handleIOExceptionAndNoSuchElementException(Exception e) {
+        logger.info("CandidateController::handleIOExceptionAndNoSuchElementException");
+        e.printStackTrace();
         return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GenericResponseBody> handleException(Exception e) {
         logger.info("CandidateController::handleException");
-        logger.error(e.toString());
+        e.printStackTrace();
         return ResponseEntity.badRequest().body(new GenericResponseBody(false, e.getMessage()));
     }
 

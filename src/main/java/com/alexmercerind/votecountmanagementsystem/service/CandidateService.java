@@ -29,11 +29,11 @@ public class CandidateService {
         return candidateRepository.findAll();
     }
 
-    public Candidate findById(int candidateId) {
+    public Candidate findByCandidateId(int candidateId) {
         return candidateRepository.findById(candidateId).get();
     }
 
-    public void deleteById(int candidateId) {
+    public void deleteByCandidateId(int candidateId) {
         candidateRepository.deleteById(candidateId);
     }
 
@@ -59,7 +59,7 @@ public class CandidateService {
         }
     }
 
-    public void imageById(int candidateId, HttpServletResponse httpServletResponse) throws IOException {
+    public void imageByCandidateId(int candidateId, HttpServletResponse httpServletResponse) throws IOException {
 
         final CandidateImage candidateImage = candidateImageRepository.findById(candidateId).get();
 

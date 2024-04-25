@@ -1,5 +1,7 @@
 package com.alexmercerind.votecountmanagementsystem.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,9 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CandidateSaveRequestBody {
-    private String candidateName;
-    private String candidateParty;
-    private String candidateAddress;
-    private String candidateImage;
+public class RoundFindAllResponseBodyItem {
+    private int roundId;
+    private String roundDistrict;
+    private List<CandidateVoteCount> candidateVoteCounts;
 }
