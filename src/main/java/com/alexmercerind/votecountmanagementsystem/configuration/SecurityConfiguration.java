@@ -32,7 +32,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authorizeRequests -> {
                             authorizeRequests
-                                    .requestMatchers(HttpMethod.GET, "/results/**")
+                                    .requestMatchers(HttpMethod.GET, "/rounds/")
+                                    .permitAll()
+                                    .requestMatchers(HttpMethod.GET, "/candidates/image/*")
                                     .permitAll()
                                     .anyRequest()
                                     .authenticated();
