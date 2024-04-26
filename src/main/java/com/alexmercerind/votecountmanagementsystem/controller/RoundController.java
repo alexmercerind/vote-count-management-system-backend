@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alexmercerind.votecountmanagementsystem.dto.GenericResponseBody;
+import com.alexmercerind.votecountmanagementsystem.dto.RoundFindAllOrderBy;
 import com.alexmercerind.votecountmanagementsystem.dto.RoundFindAllResponseBodyItem;
 import com.alexmercerind.votecountmanagementsystem.dto.RoundSaveRequestBody;
 import com.alexmercerind.votecountmanagementsystem.service.RoundService;
@@ -30,10 +32,12 @@ public class RoundController {
     private RoundService roundService;
 
     @GetMapping("/")
-    public ResponseEntity<Iterable<RoundFindAllResponseBodyItem>> findAll()
+    public ResponseEntity<Iterable<RoundFindAllResponseBodyItem>> findAll(
+            @RequestParam(value = "orderBy", defaultValue = "candidateId") RoundFindAllOrderBy orderBy,
+            @RequestParam(value = "asc", defaultValue = "true") boolean asc)
             throws InterruptedException, ExecutionException {
         logger.info("RoundController::findAll");
-        final Iterable<RoundFindAllResponseBodyItem> rounds = roundService.findAll();
+        final Iterable<RoundFindAllResponseBodyItem> rounds = roundService.findAll(orderBy, asc);
         return ResponseEntity.ok(rounds);
     }
 

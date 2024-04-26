@@ -8,12 +8,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alexmercerind.votecountmanagementsystem.dto.CandidateVoteCount;
+import com.alexmercerind.votecountmanagementsystem.dto.RoundFindAllOrderBy;
 import com.alexmercerind.votecountmanagementsystem.dto.RoundFindAllResponseBodyItem;
 import com.alexmercerind.votecountmanagementsystem.entity.Candidate;
 import com.alexmercerind.votecountmanagementsystem.entity.CandidateRoundVoteCount;
@@ -35,13 +38,21 @@ public class RoundService {
     @Autowired
     private CandidateRoundVoteCountRepository candidateRoundVoteCountRepository;
 
-    public List<RoundFindAllResponseBodyItem> findAll() throws InterruptedException, ExecutionException {
+    public List<RoundFindAllResponseBodyItem> findAll(@NonNull RoundFindAllOrderBy orderBy, boolean asc)
+            throws InterruptedException, ExecutionException {
+
         final ArrayList<RoundFindAllResponseBodyItem> roundFindAllResponseBodyItems = new ArrayList<RoundFindAllResponseBodyItem>();
 
         final CompletableFuture<List<Round>> roundsCompletableFuture = CompletableFuture.supplyAsync(() -> {
             return Streamable.of(roundRepository.findAllByOrderByRoundDistrictAscRoundIdAsc()).toList();
         });
         final CompletableFuture<List<Candidate>> candidatesCompletableFuture = CompletableFuture.supplyAsync(() -> {
+            final String name = orderBy.name();
+            if (name.startsWith("candidate")) {
+                return Streamable
+                        .of(candidateRepository.findAll(Sort.by(asc ? Order.asc(name) : Order.desc(name))))
+                        .toList();
+            }
             return Streamable.of(candidateRepository.findAll()).toList();
         });
 
@@ -104,6 +115,20 @@ public class RoundService {
         }
 
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()])).join();
+
+        if (orderBy == RoundFindAllOrderBy.voteCount) {
+            for (final RoundFindAllResponseBodyItem roundFindAllResponseBodyItem : roundFindAllResponseBodyItems) {
+                if (asc) {
+                    roundFindAllResponseBodyItem
+                            .getCandidateVoteCounts()
+                            .sort((a, b) -> a.getVoteCount().compareTo(b.getVoteCount()));
+                } else {
+                    roundFindAllResponseBodyItem
+                            .getCandidateVoteCounts()
+                            .sort((a, b) -> b.getVoteCount().compareTo(a.getVoteCount()));
+                }
+            }
+        }
 
         return roundFindAllResponseBodyItems;
     }
