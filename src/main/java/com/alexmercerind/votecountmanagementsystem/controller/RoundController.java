@@ -1,5 +1,7 @@
 package com.alexmercerind.votecountmanagementsystem.controller;
 
+import java.util.concurrent.ExecutionException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,8 @@ public class RoundController {
     private RoundService roundService;
 
     @GetMapping("/")
-    public ResponseEntity<Iterable<RoundFindAllResponseBodyItem>> findAll() {
+    public ResponseEntity<Iterable<RoundFindAllResponseBodyItem>> findAll()
+            throws InterruptedException, ExecutionException {
         logger.info("RoundController::findAll");
         final Iterable<RoundFindAllResponseBodyItem> rounds = roundService.findAll();
         return ResponseEntity.ok(rounds);

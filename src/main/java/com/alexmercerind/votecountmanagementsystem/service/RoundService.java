@@ -1,11 +1,14 @@
 package com.alexmercerind.votecountmanagementsystem.service;
 
 import java.math.BigInteger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,32 +35,75 @@ public class RoundService {
     @Autowired
     private CandidateRoundVoteCountRepository candidateRoundVoteCountRepository;
 
-    public List<RoundFindAllResponseBodyItem> findAll() {
+    public List<RoundFindAllResponseBodyItem> findAll() throws InterruptedException, ExecutionException {
         final ArrayList<RoundFindAllResponseBodyItem> roundFindAllResponseBodyItems = new ArrayList<RoundFindAllResponseBodyItem>();
 
-        final Iterable<Round> rounds = roundRepository.findAll();
-        final Iterable<Candidate> candidates = candidateRepository.findAll();
+        final CompletableFuture<List<Round>> roundsCompletableFuture = CompletableFuture.supplyAsync(() -> {
+            return Streamable.of(roundRepository.findAll()).toList();
+        });
+        final CompletableFuture<List<Candidate>> candidatesCompletableFuture = CompletableFuture.supplyAsync(() -> {
+            return Streamable.of(candidateRepository.findAll()).toList();
+        });
+
+        CompletableFuture.allOf(roundsCompletableFuture, candidatesCompletableFuture).join();
+
+        final List<Round> rounds = roundsCompletableFuture.get();
+        final List<Candidate> candidates = candidatesCompletableFuture.get();
 
         for (final Round round : rounds) {
-            final ArrayList<CandidateVoteCount> candidateVoteCounts = new ArrayList<CandidateVoteCount>();
             final RoundFindAllResponseBodyItem roundFindAllResponseBodyItem = new RoundFindAllResponseBodyItem();
-
             roundFindAllResponseBodyItem.setRoundId(round.getRoundId());
             roundFindAllResponseBodyItem.setRoundDistrict(round.getRoundDistrict());
-            roundFindAllResponseBodyItem.setCandidateVoteCounts(candidateVoteCounts);
+            roundFindAllResponseBodyItem.setCandidateVoteCounts(new ArrayList<CandidateVoteCount>());
+            roundFindAllResponseBodyItems.add(roundFindAllResponseBodyItem);
 
             for (final Candidate candidate : candidates) {
-                final CandidateRoundVoteCountId candidateRoundVoteCountId = new CandidateRoundVoteCountId();
-                candidateRoundVoteCountId.setCandidateId(candidate.getCandidateId());
-                candidateRoundVoteCountId.setRoundId(round.getRoundId());
-                candidateRoundVoteCountId.setRoundDistrict(round.getRoundDistrict());
-
-                final CandidateRoundVoteCount candidateRoundVoteCount = candidateRoundVoteCountRepository
-                        .findById(candidateRoundVoteCountId).get();
-                candidateVoteCounts.add(new CandidateVoteCount(candidate, candidateRoundVoteCount.getVoteCount()));
+                final CandidateVoteCount candidateVoteCount = new CandidateVoteCount(candidate, BigInteger.ZERO);
+                roundFindAllResponseBodyItem.getCandidateVoteCounts().add(candidateVoteCount);
             }
-            roundFindAllResponseBodyItems.add(roundFindAllResponseBodyItem);
         }
+
+        final ArrayList<CompletableFuture<Void>> completableFutures = new ArrayList<CompletableFuture<Void>>();
+
+        for (int i_ = 0; i_ < rounds.size(); i_++) {
+            final int i = i_;
+            final Round round = rounds.get(i);
+
+            final CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+
+                for (int j = 0; j < candidates.size(); j++) {
+                    final Candidate candidate = candidates.get(j);
+
+                    final CandidateRoundVoteCountId candidateRoundVoteCountId = new CandidateRoundVoteCountId();
+                    candidateRoundVoteCountId.setCandidateId(candidate.getCandidateId());
+                    candidateRoundVoteCountId.setRoundId(round.getRoundId());
+                    candidateRoundVoteCountId.setRoundDistrict(round.getRoundDistrict());
+
+                    BigInteger voteCount = BigInteger.ZERO;
+
+                    try {
+                        voteCount = candidateRoundVoteCountRepository
+                                .findById(candidateRoundVoteCountId)
+                                .get()
+                                .getVoteCount();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    roundFindAllResponseBodyItems
+                            .get(i)
+                            .getCandidateVoteCounts()
+                            .get(j)
+                            .setVoteCount(voteCount);
+                }
+
+            });
+
+            completableFutures.add(completableFuture);
+
+        }
+
+        CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()])).join();
 
         return roundFindAllResponseBodyItems;
     }
@@ -110,25 +156,29 @@ public class RoundService {
 
         roundRepository.deleteById(new RoundId(roundId, roundDistrict));
 
-        final Round round = new Round();
-        round.setRoundId(roundId);
-        round.setRoundDistrict(roundDistrict);
-        roundRepository.save(round);
+        try {
+            final Round round = new Round();
+            round.setRoundId(roundId);
+            round.setRoundDistrict(roundDistrict);
+            roundRepository.save(round);
 
-        candidateVotes
-                .entrySet()
-                .forEach(
-                        entry -> {
-                            final Integer candidateId = entry.getKey();
-                            final BigInteger voteCount = entry.getValue();
+            candidateVotes
+                    .entrySet()
+                    .forEach(
+                            entry -> {
+                                final Integer candidateId = entry.getKey();
+                                final BigInteger voteCount = entry.getValue();
 
-                            final CandidateRoundVoteCount candidateRoundVoteCount = new CandidateRoundVoteCount();
-                            candidateRoundVoteCount.setCandidateId(candidateId);
-                            candidateRoundVoteCount.setRoundId(roundId);
-                            candidateRoundVoteCount.setRoundDistrict(roundDistrict);
-                            candidateRoundVoteCount.setVoteCount(voteCount);
-                            candidateRoundVoteCountRepository.save(candidateRoundVoteCount);
+                                final CandidateRoundVoteCount candidateRoundVoteCount = new CandidateRoundVoteCount();
+                                candidateRoundVoteCount.setCandidateId(candidateId);
+                                candidateRoundVoteCount.setRoundId(roundId);
+                                candidateRoundVoteCount.setRoundDistrict(roundDistrict);
+                                candidateRoundVoteCount.setVoteCount(voteCount);
+                                candidateRoundVoteCountRepository.save(candidateRoundVoteCount);
 
-                        });
+                            });
+        } catch (Exception e) {
+            roundRepository.deleteById(new RoundId(roundId, roundDistrict));
+        }
     }
 }
