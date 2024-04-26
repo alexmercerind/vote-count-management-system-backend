@@ -10,6 +10,6 @@ FROM openjdk:17-jdk-slim
 
 EXPOSE 8080
 
-COPY --from=build /build/libs/vote-count-management-system-1.0.0 app.jar
+COPY --from=build /build/libs/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
