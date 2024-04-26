@@ -98,7 +98,6 @@ public class RoundService {
                                 .get()
                                 .getVoteCount();
                     } catch (Exception e) {
-                        e.printStackTrace();
                     }
 
                     roundFindAllResponseBodyItems
@@ -117,16 +116,27 @@ public class RoundService {
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()])).join();
 
         if (orderBy == RoundFindAllOrderBy.voteCount) {
+            final HashMap<Integer, BigInteger> candidateIdTotalVoteCount = new HashMap<Integer, BigInteger>();
             for (final RoundFindAllResponseBodyItem roundFindAllResponseBodyItem : roundFindAllResponseBodyItems) {
-                if (asc) {
-                    roundFindAllResponseBodyItem
-                            .getCandidateVoteCounts()
-                            .sort((a, b) -> a.getVoteCount().compareTo(b.getVoteCount()));
-                } else {
-                    roundFindAllResponseBodyItem
-                            .getCandidateVoteCounts()
-                            .sort((a, b) -> b.getVoteCount().compareTo(a.getVoteCount()));
+                for (final CandidateVoteCount candidateVoteCount : roundFindAllResponseBodyItem
+                        .getCandidateVoteCounts()) {
+                    final int candidateId = candidateVoteCount.getCandidate().getCandidateId();
+                    final BigInteger value = candidateIdTotalVoteCount
+                            .getOrDefault(candidateId, BigInteger.ZERO)
+                            .add(candidateVoteCount.getVoteCount());
+                    candidateIdTotalVoteCount.put(candidateId, value);
                 }
+            }
+            for (final RoundFindAllResponseBodyItem roundFindAllResponseBodyItem : roundFindAllResponseBodyItems) {
+                roundFindAllResponseBodyItem
+                        .getCandidateVoteCounts()
+                        .sort((a, b) -> {
+                            final int candidateIdA = a.getCandidate().getCandidateId();
+                            final int candidateIdB = b.getCandidate().getCandidateId();
+                            final BigInteger voteCountA = candidateIdTotalVoteCount.get(candidateIdA);
+                            final BigInteger voteCountB = candidateIdTotalVoteCount.get(candidateIdB);
+                            return asc ? voteCountA.compareTo(voteCountB) : voteCountB.compareTo(voteCountA);
+                        });
             }
         }
 
