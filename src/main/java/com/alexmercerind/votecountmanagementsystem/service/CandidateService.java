@@ -70,6 +70,8 @@ public class CandidateService {
 
         httpServletResponse.setContentType(mime);
         httpServletResponse.setContentLength(image.length);
+        httpServletResponse.setHeader("Cache-Control", "max-age=31536000");
+        httpServletResponse.setHeader("Content-Disposition", "inline; filename=image");
         httpServletResponse.getOutputStream().write(image);
 
     }
