@@ -27,4 +27,7 @@ public class Round {
     @Id
     @Column(name = "round_district", nullable = false)
     private String roundDistrict;
+
+//    @Column(name ="round_constituency", nullable = false)
+//    private String roundConstituency;
 }

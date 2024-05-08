@@ -56,6 +56,7 @@ public class RoundController {
         roundService.save(
                 roundSaveRequestBody.getRoundId(),
                 roundSaveRequestBody.getRoundDistrict(),
+                roundSaveRequestBody.getRoundConstituency(),
                 roundSaveRequestBody.getCandidateVotes());
         return ResponseEntity.ok(new GenericResponseBody(true, null));
     }
@@ -66,5 +67,4 @@ public class RoundController {
         e.printStackTrace();
         return ResponseEntity.badRequest().body(new GenericResponseBody(false, e.getMessage()));
     }
-
 }

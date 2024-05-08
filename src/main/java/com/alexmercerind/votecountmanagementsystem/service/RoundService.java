@@ -153,6 +153,7 @@ public class RoundService {
     public void save(
             int roundId,
             @NonNull String roundDistrict,
+            @NonNull String roundConstituency,
             @NonNull HashMap<Integer, BigInteger> candidateVotes) throws IllegalArgumentException {
 
         final List<Integer> candidateIdsCurrent = candidateRepository
@@ -195,6 +196,7 @@ public class RoundService {
             final Round round = new Round();
             round.setRoundId(roundId);
             round.setRoundDistrict(roundDistrict);
+//            round.setRoundConstituency(roundConstituency);
             roundRepository.save(round);
 
             candidateVotes
@@ -208,6 +210,7 @@ public class RoundService {
                                 candidateRoundVoteCount.setCandidateId(candidateId);
                                 candidateRoundVoteCount.setRoundId(roundId);
                                 candidateRoundVoteCount.setRoundDistrict(roundDistrict);
+                                candidateRoundVoteCount.setRoundConstituency(roundConstituency);
                                 candidateRoundVoteCount.setVoteCount(voteCount);
                                 candidateRoundVoteCountRepository.save(candidateRoundVoteCount);
 

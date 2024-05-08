@@ -15,5 +15,6 @@ import lombok.NoArgsConstructor;
 public class RoundSaveRequestBody {
     private int roundId;
     private String roundDistrict;
+    private String roundConstituency;
     private HashMap<Integer, BigInteger> candidateVotes;
 }

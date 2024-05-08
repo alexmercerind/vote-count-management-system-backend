@@ -11,4 +11,5 @@ public class CandidateRoundVoteCountId {
     private int candidateId;
     private int roundId;
     private String roundDistrict;
+    private String roundConstituency;
 }
