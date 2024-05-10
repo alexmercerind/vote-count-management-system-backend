@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class RoundId {
     private int roundId;
     private String roundDistrict;
+    private String roundConstituency;
 }

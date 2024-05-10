@@ -58,6 +58,7 @@ public class SecurityConfiguration {
                 .password(passwordEncoder.encode(password))
                 .authorities("ADMIN")
                 .build();
+
         manager.createUser(user);
         return manager;
     }

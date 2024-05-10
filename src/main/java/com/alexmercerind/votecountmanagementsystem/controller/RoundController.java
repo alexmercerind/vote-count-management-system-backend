@@ -41,12 +41,14 @@ public class RoundController {
         return ResponseEntity.ok(rounds);
     }
 
-    @GetMapping("/delete/{roundId}/{roundDistrict}")
+    @GetMapping("/delete/{roundId}/{roundDistrict}/{roundConstituency")
     public ResponseEntity<GenericResponseBody> deleteByRoundIdAndRoundDistrict(
             @PathVariable("roundId") Integer roundId,
-            @PathVariable("roundDistrict") String roundDistrict) {
+            @PathVariable("roundDistrict") String roundDistrict,
+            @PathVariable("roundConstituency") String roundConstituency
+            ) {
         logger.info("RoundController::deleteByRoundIdAndRoundDistrict");
-        roundService.deleteByRoundIdAndRoundDistrict(roundId, roundDistrict);
+        roundService.deleteByRoundIdAndRoundDistrict(roundId, roundDistrict,roundConstituency );
         return ResponseEntity.ok(new GenericResponseBody(true, null));
     }
 
