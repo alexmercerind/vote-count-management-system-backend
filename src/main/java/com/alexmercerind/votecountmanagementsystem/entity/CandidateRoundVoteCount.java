@@ -34,6 +34,10 @@ public class CandidateRoundVoteCount {
     @Column(name = "round_district", nullable = false)
     private String roundDistrict;
 
+    @Id
+    @Column(name = "round_constituency", nullable = false)
+    private String roundConstituency;
+
     @Column(name = "vote_count", nullable = false)
     private BigInteger voteCount;
 }

@@ -14,5 +14,6 @@ import lombok.NoArgsConstructor;
 public class RoundFindAllResponseBodyItem {
     private int roundId;
     private String roundDistrict;
+    private String roundConstituency;
     private List<CandidateVoteCount> candidateVoteCounts;
 }
