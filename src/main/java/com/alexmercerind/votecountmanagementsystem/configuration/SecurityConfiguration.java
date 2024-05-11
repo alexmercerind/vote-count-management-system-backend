@@ -53,13 +53,13 @@ public class SecurityConfiguration {
     UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
         final InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 
-        final HashMap<String, String> users = new HashMap<String, String>();
-
         final UserDetails admin = User.withUsername("admin")
-                .password(passwordEncoder.encode(users.get("qiKdmpKKhl")))
+                .password(passwordEncoder.encode("qiKdmpKKhl"))
                 .roles(ROLE_USER, ROLE_ADMIN)
                 .build();
         manager.createUser(admin);
+
+        final HashMap<String, String> users = new HashMap<String, String>();
 
         users.put("lalkuan", "Fcwf5IezsG");
         users.put("bhimtal", "HhcGT7fipb");
