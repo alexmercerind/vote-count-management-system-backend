@@ -33,10 +33,14 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authorizeRequests -> {
                             authorizeRequests
-                                    .requestMatchers(HttpMethod.GET, "/rounds/")
+                                    .requestMatchers("/rounds/")
                                     .permitAll()
-                                    .requestMatchers(HttpMethod.GET, "/candidates/image/*")
+                                    .requestMatchers("/candidates/image/*")
                                     .permitAll()
+                                    .requestMatchers("/candidates/*")
+                                    .hasRole(ROLE_ADMIN)
+                                    .requestMatchers("/rounds/*")
+                                    .hasRole(ROLE_USER)
                                     .anyRequest()
                                     .authenticated();
 
