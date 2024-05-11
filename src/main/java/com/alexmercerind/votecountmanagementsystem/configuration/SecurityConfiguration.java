@@ -22,8 +22,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfiguration {
 
-    static private final String ROLE_ADMIN = "ADMIN";
-    static private final String ROLE_USER = "USER";
+    static public final String ROLE_ADMIN = "ADMIN";
+    static public final String ROLE_ARO = "ARO";
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -36,10 +36,6 @@ public class SecurityConfiguration {
                                     .permitAll()
                                     .requestMatchers("/candidates/image/*")
                                     .permitAll()
-                                    .requestMatchers("/candidates/*")
-                                    .hasRole(ROLE_ADMIN)
-                                    .requestMatchers("/rounds/*")
-                                    .hasRole(ROLE_USER)
                                     .anyRequest()
                                     .authenticated();
 
@@ -55,7 +51,7 @@ public class SecurityConfiguration {
 
         final UserDetails admin = User.withUsername("admin")
                 .password(passwordEncoder.encode("qiKdmpKKhl"))
-                .roles(ROLE_USER, ROLE_ADMIN)
+                .authorities(ROLE_ADMIN, ROLE_ARO)
                 .build();
         manager.createUser(admin);
 
@@ -80,7 +76,7 @@ public class SecurityConfiguration {
         for (String username : users.keySet()) {
             final UserDetails user = User.withUsername(username)
                     .password(passwordEncoder.encode(users.get(username)))
-                    .roles(ROLE_USER)
+                    .authorities(ROLE_ARO)
                     .build();
             manager.createUser(user);
         }

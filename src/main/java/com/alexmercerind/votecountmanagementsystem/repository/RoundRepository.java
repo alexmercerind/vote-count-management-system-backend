@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RoundRepository extends JpaRepository<Round, RoundId> {
 
-    public Iterable<Round> findAllByOrderByRoundDistrictAscRoundIdAsc();
+    public Iterable<Round> findAllByOrderByRoundDistrictAscRoundConstituencyAscRoundIdAsc();
 
 }

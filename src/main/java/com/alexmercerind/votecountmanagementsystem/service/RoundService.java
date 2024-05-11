@@ -44,7 +44,8 @@ public class RoundService {
         final ArrayList<RoundFindAllResponseBodyItem> roundFindAllResponseBodyItems = new ArrayList<RoundFindAllResponseBodyItem>();
 
         final CompletableFuture<List<Round>> roundsCompletableFuture = CompletableFuture.supplyAsync(() -> {
-            return Streamable.of(roundRepository.findAllByOrderByRoundDistrictAscRoundIdAsc()).toList();
+            return Streamable.of(roundRepository.findAllByOrderByRoundDistrictAscRoundConstituencyAscRoundIdAsc())
+                    .toList();
         });
         final CompletableFuture<List<Candidate>> candidatesCompletableFuture = CompletableFuture.supplyAsync(() -> {
             final String name = orderBy.name();
@@ -145,12 +146,11 @@ public class RoundService {
         return roundFindAllResponseBodyItems;
     }
 
-    public void deleteByRoundIdAndRoundDistrict(
+    public void deleteByRoundIdAndRoundDistrictAndRoundConstituency(
             int roundId,
             @NonNull String roundDistrict,
-            @NonNull String roundConstituency
-            ) {
-        roundRepository.deleteById(new RoundId(roundId, roundDistrict,roundConstituency));
+            @NonNull String roundConstituency) {
+        roundRepository.deleteById(new RoundId(roundId, roundDistrict, roundConstituency));
     }
 
     @Transactional()
@@ -194,7 +194,7 @@ public class RoundService {
             }
         }
 
-        roundRepository.deleteById(new RoundId(roundId, roundDistrict,roundConstituency));
+        roundRepository.deleteById(new RoundId(roundId, roundDistrict, roundConstituency));
 
         try {
             final Round round = new Round();

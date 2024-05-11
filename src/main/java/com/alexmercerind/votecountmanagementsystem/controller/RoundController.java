@@ -6,10 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alexmercerind.votecountmanagementsystem.configuration.SecurityConfiguration;
 import com.alexmercerind.votecountmanagementsystem.dto.GenericResponseBody;
 import com.alexmercerind.votecountmanagementsystem.dto.RoundFindAllOrderBy;
 import com.alexmercerind.votecountmanagementsystem.dto.RoundFindAllResponseBodyItem;
@@ -42,19 +46,35 @@ public class RoundController {
     }
 
     @GetMapping("/delete/{roundId}/{roundDistrict}/{roundConstituency}")
-    public ResponseEntity<GenericResponseBody> deleteByRoundIdAndRoundDistrict(
+    public ResponseEntity<GenericResponseBody> deleteByRoundIdAndRoundDistrictAndRoundConstituency(
             @PathVariable("roundId") Integer roundId,
             @PathVariable("roundDistrict") String roundDistrict,
-            @PathVariable("roundConstituency") String roundConstituency
-            ) {
-        logger.info("RoundController::deleteByRoundIdAndRoundDistrict");
-        roundService.deleteByRoundIdAndRoundDistrict(roundId, roundDistrict,roundConstituency );
+            @PathVariable("roundConstituency") String roundConstituency,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        logger.info("RoundController::deleteByRoundIdAndRoundDistrictAndRoundConstituency");
+        logger.info(userDetails.getAuthorities().toString());
+
+        if (!(userDetails.getUsername().equals("admin")
+                || (userDetails.getUsername().equals(roundConstituency.toLowerCase().replaceAll(" ", ""))))) {
+            throw new SecurityException("Unauthorized");
+        }
+
+        roundService.deleteByRoundIdAndRoundDistrictAndRoundConstituency(roundId, roundDistrict, roundConstituency);
         return ResponseEntity.ok(new GenericResponseBody(true, null));
     }
 
     @PostMapping("/save")
-    public ResponseEntity<GenericResponseBody> save(@RequestBody RoundSaveRequestBody roundSaveRequestBody) {
+    public ResponseEntity<GenericResponseBody> save(@RequestBody RoundSaveRequestBody roundSaveRequestBody,
+            @AuthenticationPrincipal UserDetails userDetails) {
         logger.info("RoundController::save");
+        logger.info(userDetails.getAuthorities().toString());
+
+        if (!(userDetails.getUsername().equals("admin")
+                || (userDetails.getUsername()
+                        .equals(roundSaveRequestBody.getRoundConstituency().toLowerCase().replaceAll(" ", ""))))) {
+            throw new SecurityException("Unauthorized");
+        }
+
         roundService.save(
                 roundSaveRequestBody.getRoundId(),
                 roundSaveRequestBody.getRoundDistrict(),
