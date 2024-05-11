@@ -65,6 +65,7 @@ public class RoundService {
             final RoundFindAllResponseBodyItem roundFindAllResponseBodyItem = new RoundFindAllResponseBodyItem();
             roundFindAllResponseBodyItem.setRoundId(round.getRoundId());
             roundFindAllResponseBodyItem.setRoundDistrict(round.getRoundDistrict());
+            roundFindAllResponseBodyItem.setRoundConstituency(round.getRoundConstituency());
             roundFindAllResponseBodyItem.setCandidateVoteCounts(new ArrayList<CandidateVoteCount>());
             roundFindAllResponseBodyItems.add(roundFindAllResponseBodyItem);
 
@@ -89,6 +90,7 @@ public class RoundService {
                     candidateRoundVoteCountId.setCandidateId(candidate.getCandidateId());
                     candidateRoundVoteCountId.setRoundId(round.getRoundId());
                     candidateRoundVoteCountId.setRoundDistrict(round.getRoundDistrict());
+                    candidateRoundVoteCountId.setRoundConstituency(round.getRoundConstituency());
 
                     BigInteger voteCount = BigInteger.ZERO;
 
@@ -145,14 +147,17 @@ public class RoundService {
 
     public void deleteByRoundIdAndRoundDistrict(
             int roundId,
-            @NonNull String roundDistrict) {
-        roundRepository.deleteById(new RoundId(roundId, roundDistrict));
+            @NonNull String roundDistrict,
+            @NonNull String roundConstituency
+            ) {
+        roundRepository.deleteById(new RoundId(roundId, roundDistrict,roundConstituency));
     }
 
     @Transactional()
     public void save(
             int roundId,
             @NonNull String roundDistrict,
+            @NonNull String roundConstituency,
             @NonNull HashMap<Integer, BigInteger> candidateVotes) throws IllegalArgumentException {
 
         final List<Integer> candidateIdsCurrent = candidateRepository
@@ -189,12 +194,13 @@ public class RoundService {
             }
         }
 
-        roundRepository.deleteById(new RoundId(roundId, roundDistrict));
+        roundRepository.deleteById(new RoundId(roundId, roundDistrict,roundConstituency));
 
         try {
             final Round round = new Round();
             round.setRoundId(roundId);
             round.setRoundDistrict(roundDistrict);
+            round.setRoundConstituency(roundConstituency);
             roundRepository.save(round);
 
             candidateVotes
@@ -208,12 +214,13 @@ public class RoundService {
                                 candidateRoundVoteCount.setCandidateId(candidateId);
                                 candidateRoundVoteCount.setRoundId(roundId);
                                 candidateRoundVoteCount.setRoundDistrict(roundDistrict);
+                                candidateRoundVoteCount.setRoundConstituency(roundConstituency);
                                 candidateRoundVoteCount.setVoteCount(voteCount);
                                 candidateRoundVoteCountRepository.save(candidateRoundVoteCount);
 
                             });
         } catch (Exception e) {
-            roundRepository.deleteById(new RoundId(roundId, roundDistrict));
+            roundRepository.deleteById(new RoundId(roundId, roundDistrict, roundConstituency));
         }
     }
 }
