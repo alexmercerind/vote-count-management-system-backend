@@ -41,7 +41,7 @@ public class RoundController {
         return ResponseEntity.ok(rounds);
     }
 
-    @GetMapping("/delete/{roundId}/{roundDistrict}/{roundConstituency")
+    @GetMapping("/delete/{roundId}/{roundDistrict}/{roundConstituency}")
     public ResponseEntity<GenericResponseBody> deleteByRoundIdAndRoundDistrict(
             @PathVariable("roundId") Integer roundId,
             @PathVariable("roundDistrict") String roundDistrict,
