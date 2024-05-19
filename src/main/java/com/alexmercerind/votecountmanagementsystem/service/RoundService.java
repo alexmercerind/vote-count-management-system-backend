@@ -44,7 +44,7 @@ public class RoundService {
         final ArrayList<RoundFindAllResponseBodyItem> roundFindAllResponseBodyItems = new ArrayList<RoundFindAllResponseBodyItem>();
 
         final CompletableFuture<List<Round>> roundsCompletableFuture = CompletableFuture.supplyAsync(() -> {
-            return Streamable.of(roundRepository.findAllByOrderByRoundDistrictAscRoundConstituencyAscRoundIdAsc())
+            return Streamable.of(roundRepository.findAllByOrderByRoundIdAscRoundDistrictAscRoundConstituencyAsc())
                     .toList();
         });
         final CompletableFuture<List<Candidate>> candidatesCompletableFuture = CompletableFuture.supplyAsync(() -> {
